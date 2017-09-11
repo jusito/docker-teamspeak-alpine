@@ -86,14 +86,14 @@ if $downloaded ;then
 	echo "extracting new version"
 	# exctract new version
 	tar --overwrite -xf "${server_tar}"
-	ls -A
+
 	# go into it
 	temp_server_dirname=`ls -F | grep / | head --lines=1`
 	cd "$temp_server_dirname"
 	
 	echo "copy needed files from installation to new version"
 	#copy own files into
-	for file in $files_backup
+	for file in ${files_backup[@]}
 	do
 		if [ -e "${TS_PATH}/${file}" ]; then
 			cp -fv "${TS_PATH}/${file}" "${file}"
@@ -110,7 +110,7 @@ if $downloaded ;then
 	
 	echo "moving new files to installation"
 	# move all files to installation #old: /tmp/${temp_server_dirname}
-	cp -rvf * "${TS_PATH}"
+	cp -rf * "${TS_PATH}"
 	
 	echo "cleanup"
 	# clear workdir
