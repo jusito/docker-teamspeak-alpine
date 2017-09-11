@@ -6,8 +6,7 @@ ENV TS_DIR_NAME="teamspeak3-server"
 ENV TS_PATH="/home/${TS_DIR_NAME}" \
 	TS_GROUP_ID=10002 \
 	TS_USER_ID=10002 \
-	TS_USER=teamspeak \
-	LD_LIBRARY_PATH=".:$LD_LIBRARY_PATH"
+	TS_USER=teamspeak
 
 COPY ["teamspeakUpdater.sh", "/home/teamspeakUpdater.sh" ]
 	
