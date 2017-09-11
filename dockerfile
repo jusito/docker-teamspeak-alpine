@@ -15,7 +15,7 @@ RUN apk add --no-cache bash=4.3.48-r1 bzip2=1.0.6-r5 coreutils=8.27-r0 curl=7.55
 	addgroup -g "${TS_GROUP_ID}" "${TS_USER}" && \
 	adduser -h "${TS_PATH}" -g "" -s "/bin/false" -G "${TS_USER}" -D -u "${TS_USER_ID}" "${TS_USER}" && \
 	chown "$TS_USER" "/home/teamspeakUpdater.sh" && \
-	chmod -R =700 "/home/teamspeakUpdater.sh" && \
+	chmod -R =500 "/home/teamspeakUpdater.sh" && \
 	chown "$TS_USER" "$TS_PATH" && \
 	chmod -R =700 "$TS_PATH" && \
 	apk del --quiet --no-cache --progress --purge && \

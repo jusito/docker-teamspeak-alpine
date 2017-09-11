@@ -1,12 +1,6 @@
 #!/bin/bash
 set -e
 
-for i in {1..5}
-do
-	echo "${i}/5 waiting for starting"
-	sleep 1s
-done
-
 #TS_DIR_NAME, TS_PATH => exported in dockerfile
 website="http://dl.4players.de/ts/releases/"
 versions=$(curl -s "$website" | grep -Po "(?<=>)(\d+(?:\.\d+)+/)(?=<)" | sort -t "." -k 1,1nr -k 2,2nr -k 3,3nr -k 4,4nr)
