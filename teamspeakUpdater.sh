@@ -96,7 +96,9 @@ if $downloaded ;then
 	for file in $files_backup
 	do
 		if [ -e "${TS_PATH}/${file}" ]; then
-			cp -f "${TS_PATH}/${file}" "${file}"
+			cp -fv "${TS_PATH}/${file}" "${file}"
+		else
+			echo "${file} doesn't exist"
 		fi
 	done
 	
@@ -108,7 +110,7 @@ if $downloaded ;then
 	
 	echo "moving new files to installation"
 	# move all files to installation #old: /tmp/${temp_server_dirname}
-	cp -rf * "${TS_PATH}"
+	cp -rvf * "${TS_PATH}"
 	
 	echo "cleanup"
 	# clear workdir
