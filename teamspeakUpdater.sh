@@ -114,4 +114,7 @@ fi
 # start the server
 cd "$TS_PATH"
 chmod -R =700 "$TS_PATH"
-exec "./${startscript_name}"
+
+params="$@"
+teamspeak_params=("${params[@]/$1}")
+exec "./${startscript_name}" $teamspeak_params
