@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 set -e
 
 website="http://dl.4players.de/ts/releases/"
@@ -52,9 +52,7 @@ fi
 
 echo "installing teamspeak version ${version}"
 files_backup=("licensekey.dat" "query_ip_blacklist.txt" "query_ip_whitelist.txt" "serverkey.dat" "ts3server.ini" "ts3server.sqlitedb")
-echo "1"
 if $downloaded ;then
-	echo "2"
 	#remove last logs and 
 	cd "${TS_PATH}"
 	if [ -e "logs" ]; then
@@ -70,7 +68,7 @@ if $downloaded ;then
 	else
 		echo "directory logs doesn't exist, skipped log clear"
 	fi
-	echo "3"
+
 	#tar downloaded to install_dir with overwrite
 	cd "/tmp/"
 	# check if there is an last workdir
@@ -111,7 +109,7 @@ if $downloaded ;then
 	# clear workdir
 	rm -rf "/tmp/${TS_DIR_NAME}"
 fi
-echo "4"
+
 # start the server
 cd "$TS_PATH"
 chmod -R =700 "$TS_PATH"
