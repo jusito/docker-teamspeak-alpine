@@ -1,7 +1,6 @@
-#!/bin/bash
+#!/bin/sh
 set -e
 
-#TS_DIR_NAME, TS_PATH => exported in dockerfile
 website="http://dl.4players.de/ts/releases/"
 versions=$(curl -s "$website" | grep -Po "(?<=>)(\d+(?:\.\d+)+/)(?=<)" | sort -t "." -k 1,1nr -k 2,2nr -k 3,3nr -k 4,4nr)
 downloaded=false
@@ -51,9 +50,11 @@ if ! $downloaded ;then
 	done
 fi
 
-echo "installing teamspeak version"
+echo "installing teamspeak version ${version}"
 files_backup=("licensekey.dat" "query_ip_blacklist.txt" "query_ip_whitelist.txt" "serverkey.dat" "ts3server.ini" "ts3server.sqlitedb")
+echo "1"
 if $downloaded ;then
+	echo "2"
 	#remove last logs and 
 	cd "${TS_PATH}"
 	if [ -e "logs" ]; then
@@ -69,7 +70,7 @@ if $downloaded ;then
 	else
 		echo "directory logs doesn't exist, skipped log clear"
 	fi
-	
+	echo "3"
 	#tar downloaded to install_dir with overwrite
 	cd "/tmp/"
 	# check if there is an last workdir
@@ -80,7 +81,7 @@ if $downloaded ;then
 	echo "extracting new version"
 	# exctract new version
 	tar --overwrite -xf "${server_tar}"
-
+	
 	# go into it
 	temp_server_dirname=`ls -F | grep / | head --lines=1`
 	cd "$temp_server_dirname"
@@ -110,11 +111,12 @@ if $downloaded ;then
 	# clear workdir
 	rm -rf "/tmp/${TS_DIR_NAME}"
 fi
-
+echo "4"
 # start the server
 cd "$TS_PATH"
 chmod -R =700 "$TS_PATH"
 
-params="$@"
-teamspeak_params=("${params[@]/$1}")
-exec "./${startscript_name}" $teamspeak_params
+teamspeak_params=("$@")
+unset 'teamspeak_params[0]'
+
+exec "./${startscript_name}" "$teamspeak_params"

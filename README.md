@@ -1,4 +1,12 @@
 # docker-teamspeak-alpine
+WIP:
+- trap for sending signals to teamspeak server
+- less dependencies
+  - bash->sh arrays
+  - grep->busybox grep no PCRE
+- teamspeak verification, force https (right now there isnt a source which supports https)
+  - https://www.teamspeak.com/en/downloads# => Check SHA256
+- backup working version if server is not available
 
 Run container with teamspeak auto-update:
 ```
