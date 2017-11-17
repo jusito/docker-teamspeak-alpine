@@ -45,12 +45,13 @@ if ! $downloaded ;then
 			downloadVersion "${version}"
 			if [ -e "${server_tar}" ]; then
 				downloaded=true
+				downloadedVersion="$version"
 			fi
 		fi
 	done
 fi
 
-echo "installing teamspeak version ${version}"
+echo "installing teamspeak version ${downloadedVersion}"
 files_backup=("licensekey.dat" "query_ip_blacklist.txt" "query_ip_whitelist.txt" "serverkey.dat" "ts3server.ini" "ts3server.sqlitedb")
 if $downloaded ;then
 	#remove last logs and 

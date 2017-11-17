@@ -7,6 +7,7 @@ WIP:
 - teamspeak verification, force https (right now there isnt a source which supports https)
   - https://www.teamspeak.com/en/downloads# => Check SHA256
 - backup working version if server is not available
+- Simple handling of multiple servers?
 
 Run container with teamspeak auto-update:
 ```
