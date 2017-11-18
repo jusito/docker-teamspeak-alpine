@@ -1,24 +1,29 @@
 #!/bin/bash
 set -e
 
+sleep 3s #bash=4.3.48-r1 bzip2=1.0.6-r5 coreutils=8.27-r0 curl=7.56.1-r0 grep=3.0-r0 tar=1.29-r1
+
 website="http://dl.4players.de/ts/releases/"
-versions=$(curl -s "$website" | grep -Po "(?<=>)(\d+(?:\.\d+)+/)(?=<)" | sort -t "." -k 1,1nr -k 2,2nr -k 3,3nr -k 4,4nr)
+versions=$(wget -q -O - "$website" | grep -Eo '>3\.[.0-9]+/<' | grep -Eo '[.0-9]+/' | sort -t "." -k 1,1nr -k 2,2nr -k 3,3nr -k 4,4nr)
 downloaded=false
 server_tar="/tmp/${TS_DIR_NAME}.tar.bz2"
-dir_above_serverdir=$(echo "$TS_PATH" | grep -Po "^(.+)(?=/)")
+dir_above_serverdir=$(echo "$TS_PATH" | sed 's/\(.*\)\//\1/')
 prefered_version="$1"
+teamspeak_params=("$@")
 startscript_name="ts3server_minimal_runscript.sh"
 startscript="${TS_PATH}/${startscript_name}"
+#http://dl.4players.de/ts/releases/3.0.13.8/
+#busybox wget -O - "http://dl.4players.de/ts/releases/3.0.13.8/" | busybox grep -Eo 'teamspeak3-server_linux_amd64[^"]+\.tar\.bz2' | busybox sort -r | busybox head -n 1
 
 downloadVersion() {
 	current="${website}${1}"
-	current_file=$(curl -s "$current" | grep -Po "(?i)(?<=\")teamspeak3-server_linux_amd64[^\"]+?\.tar\.bz2" | sort -r | head --lines=1 -)
+	current_file=$(wget -q -O - "$current" | grep -Eo 'teamspeak3-server_linux_amd64[^"]+\.tar\.bz2' | sort -r | head -n 1)
 	
 	# if a server version is found ...
-	if [ "$(echo "$current_file" | wc -m)" != "1" ]; then
+	if [ "$(echo "$current_file" | busybox wc -m)" != "1" ]; then
 		echo "found server version: $current_file"
 		# ... download it
-		curl -s -o "${server_tar}" "${current}${current_file}"
+		wget -q -O "${server_tar}" "${current}${current_file}"
 	fi
 }
 
@@ -61,10 +66,15 @@ if $downloaded ;then
 			if [ -e "logs.temp.tar" ]; then
 				rm "logs.temp.tar"
 			fi
-			tar --remove-files -cf "logs.temp.tar" "logs" "logs.tar"
+			#tar --remove-files -cf "logs.temp.tar" "logs" "logs.tar"
+			tar -cf "logs.temp.tar" "logs" "logs.tar"
+			rm -rf "logs"
+			rm "logs.tar"
 			mv -f "logs.temp.tar" "logs.tar"
 		else
-			tar --remove-files -cf "logs.tar" "logs"
+			#tar --remove-files -cf "logs.tar" "logs"
+			tar -cf "logs.tar" "logs"
+			rm -rf "logs"
 		fi
 	else
 		echo "directory logs doesn't exist, skipped log clear"
@@ -79,10 +89,11 @@ if $downloaded ;then
 	
 	echo "extracting new version"
 	# exctract new version
-	tar --overwrite -xf "${server_tar}"
+	tar --overwrite -xf "${server_tar}" #can't replace --overwrite right now
 	
 	# go into it
-	temp_server_dirname=`ls -F | grep / | head --lines=1`
+	#temp_server_dirname=$(ls -F | grep / | head --lines=1)
+	temp_server_dirname=$(ls -F | grep / | head -n 1)
 	cd "$temp_server_dirname"
 	
 	echo "copy needed files from installation to new version"
@@ -113,9 +124,8 @@ fi
 
 # start the server
 cd "$TS_PATH"
-chmod -R =700 "$TS_PATH"
+chown -R "$TS_USER" "$TS_PATH"
+chmod -R u=rwx,go= "$TS_PATH"
+chmod u=rwx,go= "${startscript_name}"
 
-teamspeak_params=("$@")
-unset 'teamspeak_params[0]'
-
-exec "./${startscript_name}" "$teamspeak_params"
+exec "./${startscript_name}" "${teamspeak_params[@]}"
