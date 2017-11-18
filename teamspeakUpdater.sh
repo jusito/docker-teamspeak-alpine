@@ -1,8 +1,6 @@
 #!/bin/bash
 set -e
 
-sleep 3s #bash=4.3.48-r1 bzip2=1.0.6-r5 coreutils=8.27-r0 curl=7.56.1-r0 grep=3.0-r0 tar=1.29-r1
-
 website="http://dl.4players.de/ts/releases/"
 versions=$(wget -q -O - "$website" | grep -Eo '>3\.[.0-9]+/<' | grep -Eo '[.0-9]+/' | sort -t "." -k 1,1nr -k 2,2nr -k 3,3nr -k 4,4nr)
 downloaded=false
@@ -10,6 +8,7 @@ server_tar="/tmp/${TS_DIR_NAME}.tar.bz2"
 dir_above_serverdir=$(echo "$TS_PATH" | sed 's/\(.*\)\//\1/')
 prefered_version="$1"
 teamspeak_params=("$@")
+unset 'teamspeak_params[0]'
 startscript_name="ts3server_minimal_runscript.sh"
 startscript="${TS_PATH}/${startscript_name}"
 #http://dl.4players.de/ts/releases/3.0.13.8/
@@ -128,4 +127,8 @@ chown -R "$TS_USER" "$TS_PATH"
 chmod -R u=rwx,go= "$TS_PATH"
 chmod u=rwx,go= "${startscript_name}"
 
-exec "./${startscript_name}" "${teamspeak_params[@]}"
+trap 'pkill -15 ts3server' SIGTERM
+
+"./${startscript_name}" "${teamspeak_params[@]}" &
+child=$!
+wait "$child"
