@@ -2,8 +2,9 @@ FROM frolvlad/alpine-glibc:alpine-3.6
 
 EXPOSE 9987/udp 10011 30033
 
-ENV TS_DIR_NAME="teamspeak3-server"
-ENV TS_PATH="/home/${TS_DIR_NAME}" \
+ENV TS3SERVER_LICENSE="accept" \
+	TS_DIR_NAME="teamspeak3-server" \
+	TS_PATH="/home/teamspeak3-server" \
 	TS_GROUP_ID=10002 \
 	TS_USER_ID=10002 \
 	TS_USER=teamspeak
