@@ -1,4 +1,4 @@
-FROM frolvlad/alpine-glibc:alpine-3.6
+FROM frolvlad/alpine-glibc:alpine-3.7
 
 EXPOSE 9987/udp 10011 30033
 
@@ -11,7 +11,8 @@ ENV TS3SERVER_LICENSE="accept" \
 
 COPY ["teamspeakUpdater.sh", "/home/teamspeakUpdater.sh" ]
 	
-RUN apk add --no-cache bash=4.3.48-r1 bzip2=1.0.6-r5 tar=1.29-r1 && \
+RUN apk update --no-cache && \
+	apk add --no-cache bash=4.3.48-r1 bzip2=1.0.6-r5 tar=1.29-r1 ca-certificates && \
 	addgroup -g "${TS_GROUP_ID}" "${TS_USER}" && \
 	adduser -h "${TS_PATH}" -g "" -s "/bin/false" -G "${TS_USER}" -D -u "${TS_USER_ID}" "${TS_USER}" && \
 	chown "$TS_USER" "/home/teamspeakUpdater.sh" && \
