@@ -12,32 +12,17 @@ unset 'teamspeak_params[0]'
 startscript_name="ts3server_minimal_runscript.sh"
 startscript="${TS_PATH}/${startscript_name}"
 #http://dl.4players.de/ts/releases/3.0.13.8/
-#wget -q -O - "https://www.teamspeak.com/en/downloads" | tr '\n' ' ' | grep -Eo 'SHA256:\s*[^<]+<[^>]+>[^<]*<[^>]+>[^<]*<[^>]+teamspeak3-server_linux_amd64[^"]+'
-# grep -Eo 'http[^"]+'
-# sed 's/SHA256: /'
-# sha256sum t | grep -Eo '^\S+'
+#busybox wget -O - "http://dl.4players.de/ts/releases/3.0.13.8/" | busybox grep -Eo 'teamspeak3-server_linux_amd64[^"]+\.tar\.bz2' | busybox sort -r | busybox head -n 1
 
 downloadVersion() {
 	current="${website}${1}"
 	current_file=$(wget -q -O - "$current" | grep -Eo 'teamspeak3-server_linux_amd64[^"]+\.tar\.bz2' | sort -r | head -n 1)
 	
 	# if a server version is found ...
-	if [ "$(echo "$current_file" | wc -m)" != "1" ]; then
+	if [ "$(echo "$current_file" | busybox wc -m)" != "1" ]; then
 		echo "found server version: $current_file"
 		# ... download it
 		wget -q -O "${server_tar}" "${current}${current_file}"
-	fi
-}
-
-downloadAndCheckNewest() {
-	current=$(wget -q -O - "https://www.teamspeak.com/en/downloads" | tr '\n' ' ' | grep -Eo 'SHA256:\s*[^<]+<[^>]+>[^<]*<[^>]+>[^<]*<[^>]+teamspeak3-server_linux_amd64[^"]+')
-	currentLink=$(echo "$current" | grep -Eo 'http[^"]+')
-	currentSha=$(echo "$current" | sed 's/SHA256: /')
-	
-	wget -q -O "${server_tar}" "$currentLink"
-	fileSha=$(sha256sum "${server_tar}" | grep -Eo '^\S+')
-	if [ -e "${server_tar}" ] && [ "$fileSha" == "$currentSha" ]; then
-		
 	fi
 }
 
