@@ -1,134 +1,156 @@
-#!/bin/bash
+#!/bin/sh
 set -e
 
-website="http://dl.4players.de/ts/releases/"
-versions=$(wget -q -O - "$website" | grep -Eo '>3\.[.0-9]+/<' | grep -Eo '[.0-9]+/' | sort -t "." -k 1,1nr -k 2,2nr -k 3,3nr -k 4,4nr)
-downloaded=false
-server_tar="/tmp/${TS_DIR_NAME}.tar.bz2"
 dir_above_serverdir=$(echo "$TS_PATH" | sed 's/\(.*\)\//\1/')
-prefered_version="$1"
-teamspeak_params=("$@")
-unset 'teamspeak_params[0]'
+#workfile
+server_tar="/tmp/${TS_DIR_NAME}.tar.bz2"
+#start script
 startscript_name="ts3server_minimal_runscript.sh"
 startscript="${TS_PATH}/${startscript_name}"
-#http://dl.4players.de/ts/releases/3.0.13.8/
-#busybox wget -O - "http://dl.4players.de/ts/releases/3.0.13.8/" | busybox grep -Eo 'teamspeak3-server_linux_amd64[^"]+\.tar\.bz2' | busybox sort -r | busybox head -n 1
 
-downloadVersion() {
-	current="${website}${1}"
-	current_file=$(wget -q -O - "$current" | grep -Eo 'teamspeak3-server_linux_amd64[^"]+\.tar\.bz2' | sort -r | head -n 1)
+#1 param = target file
+#downloads the newest teamspeak server to given target file
+#if the file exists after executing this, the file has a valid checksum
+#sh + busybox compatible
+downloadAndCheckNewest() {
+	#store target file name
+	targetTar=$1
+	#get substring containing checksum and link to newest file
+	current=$(wget -q -O - "https://www.teamspeak.com/en/downloads" | tr '\n' ' ' | grep -Eo 'SHA256:\s*[^<]+<[^>]+>[^<]*<[^>]+>[^<]*<[^>]+teamspeak3-server_linux_amd64[^"]+"')
+	#extract current link
+	currentLink=$(echo "$current" | grep -Eo 'http[^"]+')
+	#extract current checksum
+	currentSha=$(echo "$current" |  grep -Eo 'SHA256: ([^<]+)' | grep -Eo '[a-f0-9]{64}')
 	
-	# if a server version is found ...
-	if [ "$(echo "$current_file" | busybox wc -m)" != "1" ]; then
-		echo "found server version: $current_file"
-		# ... download it
-		wget -q -O "${server_tar}" "${current}${current_file}"
+	#download server files
+	wget -q -O "${targetTar}" "$currentLink"
+	#calculate sha of download
+	fileSha=$(sha256sum "${targetTar}" | grep -Eo '^\S+')
+	
+	#if not file exists
+	if [ ! -e "${targetTar}" ]; then
+		echo '[error] could not find server file localy'
+
+	#if checksum is incorrect
+	elif [ "$fileSha" != "$currentSha" ]; then
+		echo '[error] SHA256 invalid of downloaded file'
+		rm -f "${targetTar}"
+		
+	#if file is valid
+	else
+		echo 'downloaded newest file'
 	fi
 }
 
-echo "looking if a version is prefered"
-# try at first prefered_version
-if [ -n "$prefered_version" ]; then
-	echo "searching for given prefered_version"
-	downloadVersion "${prefered_version}"
-	if [ -e "${server_tar}" ]; then
-		downloaded=true
-	else
-		echo "couldn't find prefered server version, switching to latest"
-	fi
-fi
-
-#if prefered version not given or failed
-if ! $downloaded ;then
-	echo "looking for latest version"
-	# find latest version and download it
-	# not every version has a server version, so we need first to find the latest version
-	for version in $versions
-	do
-		if ! $downloaded ;then
-			downloadVersion "${version}"
-			if [ -e "${server_tar}" ]; then
-				downloaded=true
-				downloadedVersion="$version"
-			fi
-		fi
-	done
-fi
-
-echo "installing teamspeak version ${downloadedVersion}"
-files_backup=("licensekey.dat" "query_ip_blacklist.txt" "query_ip_whitelist.txt" "serverkey.dat" "ts3server.ini" "ts3server.sqlitedb")
-if $downloaded ;then
-	#remove last logs and 
-	cd "${TS_PATH}"
+#param 1 = parent dir of teamspeak logs
+#backup current log dir inclusive old backups
+#deletes logs after this
+backupLogs() {
+	
+	cd "$1"
+	
+	#if logs existing => backup
 	if [ -e "logs" ]; then
+		#if an logs archive already exists => include it in backup
 		if [ -e "logs.tar" ]; then
+			#if an temporary logs archive exists => remove it
 			if [ -e "logs.temp.tar" ]; then
 				rm "logs.temp.tar"
 			fi
-			#tar --remove-files -cf "logs.temp.tar" "logs" "logs.tar"
+			
+			#create backup
 			tar -cf "logs.temp.tar" "logs" "logs.tar"
+			
+			#remove files we have a backup of
 			rm -rf "logs"
 			rm "logs.tar"
 			mv -f "logs.temp.tar" "logs.tar"
+			
+		#if no logs archive already exists => just backup logs
 		else
-			#tar --remove-files -cf "logs.tar" "logs"
+			#create backup
 			tar -cf "logs.tar" "logs"
+			
+			#remove files we have a backup of
 			rm -rf "logs"
 		fi
 	else
 		echo "directory logs doesn't exist, skipped log clear"
-	fi
+	fi	
+}
 
-	#tar downloaded to install_dir with overwrite
+#removes and creates "/tmp/${TS_DIR_NAME}"
+initTempdir() {
+	# check if there is an last workdir => if so remove it
 	cd "/tmp/"
-	# check if there is an last workdir
-	if [ -e "${TS_DIR_NAME}" ] && [ -n "${TS_DIR_NAME}" ]; then
+	if [ -e "${TS_DIR_NAME}" ]; then
 		rm -rf "${TS_DIR_NAME}"
 	fi
+	mkdir "/tmp/${TS_DIR_NAME}"	
+}
+
+#oaram 1 = filename in teamspeak dir
+#copies given file to current dir (forced)
+copyFileToMe() {
+	file="$1"
+	if [ -e "${TS_PATH}/${file}" ]; then
+		cp -fv "${TS_PATH}/${file}" "${file}"
+	else
+		echo "${file} doesn't exist"
+	fi
+}
+
+echo "looking for latest version"
+# find latest version and download it
+downloadAndCheckNewest "${server_tar}"
+
+echo "installing Teamspeak server"
+
+#if server file exists (and is valid)
+if [ -e "${server_tar}" ]; then
+	#init "/tmp/${TS_DIR_NAME}"
+	initTempdir
 	
+	#=> backup teamspeak logs
+	backupLogs "${TS_PATH}"
+
+	# extract new version into temp dir
 	echo "extracting new version"
-	# exctract new version
-	tar --overwrite -xf "${server_tar}" #can't replace --overwrite right now
+	cd "/tmp/${TS_DIR_NAME}"
+	tar -xvf "${server_tar}" #can't replace --overwrite right now
 	
-	# go into it
-	#temp_server_dirname=$(ls -F | grep / | head --lines=1)
+	#cd into created dir
 	temp_server_dirname=$(ls -F | grep / | head -n 1)
 	cd "$temp_server_dirname"
 	
+	#copy persistent files to new version (only files which are part of default server files)
 	echo "copy needed files from installation to new version"
-	#copy own files into
-	for file in ${files_backup[@]}
-	do
-		if [ -e "${TS_PATH}/${file}" ]; then
-			cp -fv "${TS_PATH}/${file}" "${file}"
-		else
-			echo "${file} doesn't exist"
-		fi
-	done
+	copyFileToMe "licensekey.dat"
+	copyFileToMe "query_ip_blacklist.txt"
+	copyFileToMe "query_ip_whitelist.txt"
+	copyFileToMe "serverkey.dat"
+	copyFileToMe "ts3server.ini"
+	copyFileToMe "ts3server.sqlitedb"
 	
-	echo "removing old version of ${startscript}"
-	# remove minimal script, maybe its not in it anymore, but if we want to call it
-	if [ -e "${startscript}" ]; then
-		rm "${startscript}"
-	fi
-	
-	echo "moving new files to installation"
 	# move all files to installation #old: /tmp/${temp_server_dirname}
+	echo "moving new files to installation"
 	cp -rf * "${TS_PATH}"
 	
-	echo "cleanup"
 	# clear workdir
+	echo "cleanup"
 	rm -rf "/tmp/${TS_DIR_NAME}"
+	
+	#=> start the server
+	cd "$TS_PATH"
+	chown -R "$TS_USER" "$TS_PATH"
+	chmod -R u=rwx,go= "$TS_PATH"
+	chmod u=rwx,go= "${startscript_name}"
+	
+	#register SIGTERM trap => exit teamspeak server securely
+	trap 'pkill -15 ts3server' SIGTERM
+	
+	#start teamspeak server and wait until its closed
+	"./${startscript_name}" "$@" &
+	child=$!
+	wait "$child"
 fi
-
-# start the server
-cd "$TS_PATH"
-chown -R "$TS_USER" "$TS_PATH"
-chmod -R u=rwx,go= "$TS_PATH"
-chmod u=rwx,go= "${startscript_name}"
-
-trap 'pkill -15 ts3server' SIGTERM
-
-"./${startscript_name}" "${teamspeak_params[@]}" &
-child=$!
-wait "$child"
