@@ -2,6 +2,7 @@
 set -e
 
 dir_above_serverdir=$(echo "$TS_PATH" | sed 's/\(.*\)\//\1/')
+lastWorkingArchive="/tmp/lastWorking.tar.bz2"
 #workfile
 server_tar="/tmp/${TS_DIR_NAME}.tar.bz2"
 #start script
@@ -100,16 +101,41 @@ copyFileToMe() {
 	fi
 }
 
+#if param1 = 0
+#archives the current server tar
+#WIP
+#archiveServerFiles() {
+#	exitCode=$1
+#	
+#	#check exit code if 0 => archive server files because looks like its working
+#	if [ "$exitCode" == "0" ]; then
+#		echo "exit code valid => I archiv current server files"
+#		cp -vf "$server_tar" "$lastWorkingArchive"
+#	else
+#		echo "exit code invalid => I dont archiv current server files"
+#	fi
+#	rm "$server_tar"
+#}
+
 echo "looking for latest version"
 # find latest version and download it
 downloadAndCheckNewest "${server_tar}"
 
 echo "installing Teamspeak server"
 
+#checking if last working server files are needed
+if [ ! -e "$server_tar" ] && [ -e "$lastWorkingArchive" ]; then
+	echo 'because no new valid version could be found, using old one'
+	cp -vf "$lastWorkingArchive" "$server_tar"
+fi
+
 #if server file exists (and is valid)
 if [ -e "${server_tar}" ]; then
 	#init "/tmp/${TS_DIR_NAME}"
 	initTempdir
+	
+	#archive current valid version
+	cp -vf "$server_tar" "$lastWorkingArchive"
 	
 	#=> backup teamspeak logs
 	backupLogs "${TS_PATH}"
@@ -139,6 +165,7 @@ if [ -e "${server_tar}" ]; then
 	# clear workdir
 	echo "cleanup"
 	rm -rf "/tmp/${TS_DIR_NAME}"
+	rm "$server_tar"
 	
 	#=> start the server
 	cd "$TS_PATH"
@@ -150,7 +177,8 @@ if [ -e "${server_tar}" ]; then
 	trap 'pkill -15 ts3server' SIGTERM
 	
 	#start teamspeak server and wait until its closed
-	"./${startscript_name}" "$@" &
-	child=$!
-	wait "$child"
+	"./$startscript_name" "$@" &
+	wait "$!"
+	
+	#todo if exit code of ts = 0 => archive server files (because working) else not
 fi
