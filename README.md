@@ -1,13 +1,19 @@
 # docker-teamspeak-alpine
-WIP:
-- less dependencies
-  - bash->sh arrays
-  - tar -> --overwrite missing in busybox
-- teamspeak verification, force https (right now there isnt a source which supports https)
-  - https://www.teamspeak.com/en/downloads# => Check SHA256
-- backup working version if server is not available
+
+##Features:
+- alpine linux + glibc + ca-certs only
+- always newest version on restart
+- always SHA256 checked
+- last valid version backup/restore [auto]
+- tar logs on every restart
+- persistent: blacklist, whitelist, ts3server.ini, ts3server.sqlitedb, ...
+- docker run arguments are passed directly to ts3server
+
+##WIP:
+- backup a valid and verified version only if teamspeak server runs successful
 - Simple handling of multiple servers?
 
+##Example 1
 Run container with teamspeak auto-update:
 ```
 docker run -dti --name "teamspeak_server" -p 9987:9987/udp -p 30033:30033 -p 10011:10011 \
@@ -15,26 +21,18 @@ docker run -dti --name "teamspeak_server" -p 9987:9987/udp -p 30033:30033 -p 100
 "jusito/docker-teamspeak-alpine:latest"
 ```
 
-Run container with pinned teamspeak version "3.0.13.8/":
-```
-docker run -dti --name "teamspeak_server" -p 9987:9987/udp -p 30033:30033 -p 10011:10011 \
---volume="teamspeak_server:/home/teamspeak3-server:rw" \
-"jusito/docker-teamspeak-alpine:latest" "3.0.13.8/"
-```
-See: http://dl.4players.de/ts/releases/
-
-If you have own arguments for the teamspeak server you can add it to run, but keep in mind that the first is always for pinned version.
-
+##Example 2
 For example, use your given ini with auto-update:
 ```
 docker run -dti --name "teamspeak_server" -p 9987:9987/udp -p 30033:30033 -p 10011:10011 \
 --volume="teamspeak_server:/home/teamspeak3-server:rw" \
-"jusito/docker-teamspeak-alpine:latest" "" "inifile=ts3server.ini"
+"jusito/docker-teamspeak-alpine:latest" "inifile=ts3server.ini"
 ```
 
-Use your own ini with pinned version:
+##Example 3
+Setting serveradmin password & ini:
 ```
 docker run -dti --name "teamspeak_server" -p 9987:9987/udp -p 30033:30033 -p 10011:10011 \
 --volume="teamspeak_server:/home/teamspeak3-server:rw" \
-"jusito/docker-teamspeak-alpine:latest" "3.0.13.8/" "inifile=ts3server.ini"
+"jusito/docker-teamspeak-alpine:latest" "serveradmin_password=123" "inifile=ts3server.ini"
 ```
