@@ -1,6 +1,6 @@
 FROM frolvlad/alpine-glibc:alpine-3.7
 
-EXPOSE 9987/udp 10011 30033
+EXPOSE 9987/udp 10011/tcp 30033/tcp
 
 ENV TS3SERVER_LICENSE="accept" \
 	TS_DIR_NAME="teamspeak3-server" \
