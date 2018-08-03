@@ -1,4 +1,4 @@
-FROM frolvlad/alpine-glibc:alpine-3.7
+FROM frolvlad/alpine-glibc:alpine-3.8
 
 EXPOSE 9987/udp 10011/tcp 30033/tcp
 
