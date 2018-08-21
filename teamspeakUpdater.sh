@@ -17,7 +17,7 @@ downloadAndCheckNewest() {
 	#store target file name
 	targetTar=$1
 	#get substring containing checksum and link to newest file
-	current=$(wget -q -O - "https://www.teamspeak.com/en/downloads" | tr '\n' ' ' | grep -Eo 'SHA256:\s*[^<]+<[^>]+>[^<]*<[^>]+>[^<]*<[^>]+teamspeak3-server_linux_amd64[^"]+"')
+	current=$(wget -q -O - "https://www.teamspeak.com/en/downloads" | tr '\n' ' ' | grep -Eo 'SHA256:\s*[^<]+<[^>]+>[^<]*<[^>]+>[^<]*<[^>]+>[^"]+"[^"]+"[^"]+"[^"]+teamspeak3-server_linux_amd64[^"]+"')
 	#extract current link
 	currentLink=$(echo "$current" | grep -Eo 'http[^"]+')
 	#extract current checksum
