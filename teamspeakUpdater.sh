@@ -174,17 +174,20 @@ if [ -e "${server_tar}" ]; then
 	rm "$server_tar"
 	
 	#=> start the server
+	echo "preparing start, setting permissions"
 	cd "$TS_PATH"
 	chown -R "$TS_USER" "$TS_PATH"
 	chmod -R u=rwx,go= "$TS_PATH"
 	chmod u=rwx,go= "${startscript_name}"
 	
 	#register SIGTERM trap => exit teamspeak server securely
+	echo "set up trap"
 	trap 'pkill -15 ts3server' SIGTERM
 	
 	
 	
 	if [ $buildOnly ]; then
+		echo "build only"
 		#run and pipe output
 		"./$startscript_name" "$@" & >> "${TS_PATH}/build.log"
 		
@@ -214,6 +217,7 @@ if [ -e "${server_tar}" ]; then
 		fi
 
 	else
+		echo "starting server..."
 		#start teamspeak server and wait until its closed
 		"./$startscript_name" "$@" &
 		wait "$!"

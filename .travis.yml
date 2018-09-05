@@ -5,4 +5,3 @@ services:
 
 before_install:
   - docker build -t "jusito/docker-teamspeak-alpine:develop" .
-  
