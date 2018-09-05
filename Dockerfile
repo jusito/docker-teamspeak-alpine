@@ -20,7 +20,10 @@ RUN apk update && \
 	chown -R "$TS_USER" "$TS_PATH" && \
 	chmod -R u=rwx,go= "$TS_PATH" && \
 	apk del --quiet --no-cache --progress --purge && \
-	rm -rf /var/cache/apk/*
+	rm -rf /var/cache/apk/* && \
+	\
+	./home/teamspeakUpdater.sh && \
+	rm -rf "${TS_PATH}"
 
 VOLUME "$TS_PATH"
 	
