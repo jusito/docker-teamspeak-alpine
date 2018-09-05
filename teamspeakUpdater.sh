@@ -187,8 +187,6 @@ if [ -e "${server_tar}" ]; then
 	echo "set up trap"
 	trap "pkill -15 ${startscript_name}" SIGTERM
 	
-	
-	
 	if [ $buildOnly ]; then
 		echo "build only"
 		#run and pipe output
