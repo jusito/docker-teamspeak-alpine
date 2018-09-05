@@ -3,7 +3,7 @@
 
 ## Features:
 - base image(130+ stars) + this automatic build
-- alpine linux + glibc + ca-certs + ts3server = only 7MB compressed image size
+- alpine linux + glibc + ca-certs + ts3server = only 16MB compressed image size
 - always newest version on restart
 - always SHA256 checked
 - if download on restart fails => last valid version is used

@@ -187,25 +187,22 @@ if [ -e "${server_tar}" ]; then
 	
 	if [ $buildOnly ]; then
 		echo "build only"
+		
 		#run and pipe output
-		touch "${TS_PATH}/build.log"
 		"./$startscript_name" "$@" > "${TS_PATH}/build.log" &
+		
 		#until not found
 		foundLogEntry=false
 		processExists=true
 		running=true
 
 		while [ "$running" == true ]; do
-			echo "waiting... "$running
-			
 			if [ $(grep "ServerAdmin privilege key created" "${TS_PATH}/build.log" | wc -l) -ge 1 ]; then
-				echo "server started successfully"
 				foundLogEntry=true
 				running=false
 				
 			#if process is closed before we find our entry, failed!
 			elif [ $(ps -ef | grep "${startscript_name}" | grep -v 'grep' | wc -l) -lt "1" ]; then
-				echo "process doesn't exists anymore"
 				processExists=false
 				running=false
 			fi
@@ -213,7 +210,6 @@ if [ -e "${server_tar}" ]; then
 			sleep 1s
 		done
 		
-		echo "exiting"
 		if [ $processExists ]; then
 			exit 0
 		else
