@@ -23,7 +23,7 @@ RUN apk update && \
 	rm -rf /var/cache/apk/* && \
 	\
 	./home/teamspeakUpdater.sh "test-only" && \
-	rm -rf "${TS_PATH}"
+	rm -rf "${TS_PATH}/"
 
 VOLUME "$TS_PATH"
 	

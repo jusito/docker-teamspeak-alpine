@@ -1,5 +1,8 @@
 #!/bin/sh
+
+set -o pipefail
 set -e
+
 
 dir_above_serverdir=$(echo "$TS_PATH" | sed 's/\(.*\)\//\1/')
 lastWorkingArchive="/tmp/lastWorking.tar.bz2"
@@ -182,35 +185,43 @@ if [ -e "${server_tar}" ]; then
 	
 	#register SIGTERM trap => exit teamspeak server securely
 	echo "set up trap"
-	trap 'pkill -15 ts3server' SIGTERM
+	trap "pkill -15 ${startscript_name}" SIGTERM
 	
 	
 	
 	if [ $buildOnly ]; then
 		echo "build only"
 		#run and pipe output
-		"./$startscript_name" "$@" & >> "${TS_PATH}/build.log"
-		
+		touch "${TS_PATH}/build.log"
+		"./$startscript_name" "$@" > "${TS_PATH}/build.log" &
 		#until not found
 		foundLogEntry=false
 		processExists=true
-		
-		while $processExists && !$foundLogEntry
-		do			
-			#if process is closed before we find our entry, failed!
-			if [ "$(ps -ef | grep 'ts3server' | grep -v 'grep' | wc -l)" -lt "1" ]; then
-				processExists=false
-				
-			elif [ grep -q "ServerAdmin privilege key created" "${TS_PATH}/build.log" ]; then
+		running=true
+
+		while [ "$running" == true ]; do
+			echo "waiting... "$running
+			
+			if [ $(grep "ServerAdmin privilege key created" "${TS_PATH}/build.log" | wc -l) -ge 1 ]; then
+				echo "server started successfully"
 				foundLogEntry=true
+				running=false
+				
+			#if process is closed before we find our entry, failed!
+			elif [ $(ps -ef | grep "${startscript_name}" | grep -v 'grep' | wc -l) -lt "1" ]; then
+				echo "process doesn't exists anymore"
+				processExists=false
+				running=false
 			fi
 			
-			sleep 2s
+			sleep 1s
 		done
 		
+		echo "exiting"
 		if [ $processExists ]; then
 			exit 0
 		else
+			pkill -15 'ts3server'
 			exit 1
 		fi
 
