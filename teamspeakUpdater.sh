@@ -1,8 +1,6 @@
 #!/bin/sh
 
-set -o pipefail
 set -e
-
 
 dir_above_serverdir=$(echo "$TS_PATH" | sed 's/\(.*\)\//\1/')
 lastWorkingArchive="/tmp/lastWorking.tar.bz2"

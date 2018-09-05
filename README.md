@@ -1,18 +1,15 @@
 # docker-teamspeak-alpine
+[![Build Status](https://travis-ci.org/jusito/docker-teamspeak-alpine.svg?branch=master)](https://travis-ci.org/jusito/docker-teamspeak-alpine)
 
 ## Features:
 - base image(130+ stars) + this automatic build
-- alpine linux + glibc + ca-certs only means just 6MB compressed image size + ts3server
+- alpine linux + glibc + ca-certs + ts3server = only 7MB compressed image size
 - always newest version on restart
 - always SHA256 checked
 - if download on restart fails => last valid version is used
 - tar logs on every restart (inclusive last logs.tar) and clears Logs/*
 - persistent: blacklist, whitelist, ts3server.ini, ts3server.sqlitedb, ...
 - docker run arguments are passed directly to ts3server
-
-## WIP:
-- backup a valid and verified version only if teamspeak server runs successful (currently everytime a download is valid)
-- Simple handling of multiple servers?
 
 ## Example 1 - Simple setup, persistent data
 Run container with teamspeak auto-update:
