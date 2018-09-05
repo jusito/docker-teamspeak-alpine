@@ -196,11 +196,9 @@ if [ -e "${server_tar}" ]; then
 		processExists=true
 		
 		while $processExists && !$foundLogEntry
-		do
-			processes=$(ps -ef | grep "ts3server" | grep -v "grep" | wc -l)
-			
+		do			
 			#if process is closed before we find our entry, failed!
-			if [ "$processes" -lt "1" ]; then
+			if [ "$(ps -ef | grep 'ts3server' | grep -v 'grep' | wc -l)" -lt "1" ]; then
 				processExists=false
 				
 			elif [ grep -q "ServerAdmin privilege key created" "${TS_PATH}/build.log" ]; then
