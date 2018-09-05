@@ -1,9 +1,10 @@
 # docker-teamspeak-alpine
 [![Build Status](https://travis-ci.org/jusito/docker-teamspeak-alpine.svg?branch=master)](https://travis-ci.org/jusito/docker-teamspeak-alpine)
+[![](https://images.microbadger.com/badges/image/jusito/docker-teamspeak-alpine.svg)](https://microbadger.com/images/jusito/docker-teamspeak-alpine "Get your own image badge on microbadger.com")
 
 ## Features:
 - base image(130+ stars) + this automatic build
-- alpine linux + glibc + ca-certs + ts3server = only 16MB compressed image size
+- alpine linux + glibc + ca-certs + ts3server = lowest size possible
 - always newest version on restart
 - always SHA256 checked
 - if download on restart fails => last valid version is used
