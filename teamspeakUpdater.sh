@@ -8,6 +8,12 @@ server_tar="/tmp/${TS_DIR_NAME}.tar.bz2"
 #start script
 startscript_name="ts3server_minimal_runscript.sh"
 startscript="${TS_PATH}/${startscript_name}"
+#check for build only
+buildOnly=false
+if [ "$1" == "test-only" ]; then
+	buildOnly=true
+fi
+
 
 #1 param = target file
 #downloads the newest teamspeak server to given target file
@@ -176,9 +182,44 @@ if [ -e "${server_tar}" ]; then
 	#register SIGTERM trap => exit teamspeak server securely
 	trap 'pkill -15 ts3server' SIGTERM
 	
-	#start teamspeak server and wait until its closed
-	"./$startscript_name" "$@" &
-	wait "$!"
+	
+	
+	if [ $buildOnly ]; then
+		#run and pipe output
+		"./$startscript_name" "$@" & >> "${TS_PATH}/build.log"
+		
+		#until not found
+		foundLogEntry=false
+		processExists=true
+		
+		while $processExists && !$foundLogEntry
+		do
+			processes=$(ps -ef | grep "ts3server" | grep -v "grep" | wc -l)
+			
+			#if process is closed before we find our entry, failed!
+			if [ "$processes" -lt "1" ]; then
+				processExists=false
+				
+			elif [ grep -q "ServerAdmin privilege key created" "${TS_PATH}/build.log" ]; then
+				foundLogEntry=true
+			fi
+			
+			sleep 2s
+		done
+		
+		if [ $processExists ]; then
+			exit 0
+		else
+			exit 1
+		fi
+
+	else
+		#start teamspeak server and wait until its closed
+		"./$startscript_name" "$@" &
+		wait "$!"
+		
+		exit $?
+	fi
 	
 	#todo if exit code of ts = 0 => archive server files (because working) else not
 fi

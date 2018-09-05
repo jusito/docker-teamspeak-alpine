@@ -22,7 +22,7 @@ RUN apk update && \
 	apk del --quiet --no-cache --progress --purge && \
 	rm -rf /var/cache/apk/* && \
 	\
-	./home/teamspeakUpdater.sh && \
+	./home/teamspeakUpdater.sh "test-only" && \
 	rm -rf "${TS_PATH}"
 
 VOLUME "$TS_PATH"
