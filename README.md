@@ -1,5 +1,5 @@
 # docker-teamspeak-alpine
-[![Build Status](https://travis-ci.org/jusito/docker-teamspeak-alpine.svg?branch=master)](https://travis-ci.org/jusito/docker-teamspeak-alpine)
+Important: [Build Status](Failed), dependency is missing
 [![](https://images.microbadger.com/badges/image/jusito/docker-teamspeak-alpine.svg)](https://microbadger.com/images/jusito/docker-teamspeak-alpine "Get your own image badge on microbadger.com")
 
 ## Features:
@@ -64,3 +64,6 @@ docker run -dti --name "teamspeak_server" -p 9987:9987/udp -p 30033:30033 -p 100
 - createinifile=0, on 1 creates an ini file with given configuration
 - inifile=, ini used for server
 - query_ip_whitelist=query_ip_whitelist.txt
+
+## ToDo
+- add health check -> calculate & check hash

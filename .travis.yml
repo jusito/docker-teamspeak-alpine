@@ -2,4 +2,4 @@ services:
   - docker
 
 script:
-  - docker build -t "jusito/docker-teamspeak-alpine:develop" .
+  - docker build -t "jusito/docker-teamspeak-alpine:latest" .
